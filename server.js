@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-// ✅ CORS middleware
+// ✅ Enable CORS
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -17,52 +17,48 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("🎧 FM Signaling Server Active ✅");
+  res.send("🎧 FM Signaling Server Running Smoothly ✅");
 });
 
-const clients = new Map(); // id => ws
+const clients = new Map();
 
-// 🔁 Helper: broadcast to specific target
-function sendTo(targetId, data) {
-  const target = clients.get(targetId);
-  if (target && target.readyState === target.OPEN) {
-    target.send(JSON.stringify(data));
+// ✅ Safe message send
+function safeSend(ws, data) {
+  if (ws.readyState === ws.OPEN) {
+    ws.send(JSON.stringify(data));
   }
 }
 
-// 💬 Handle WebSocket connections
 wss.on("connection", (ws) => {
   const id = crypto.randomUUID();
   clients.set(id, ws);
-  console.log(`🟢 Client connected: ${id} | Total: ${clients.size}`);
+  console.log(`🟢 Connected: ${id} | Total: ${clients.size}`);
 
-  ws.send(JSON.stringify({ type: "welcome", id }));
+  safeSend(ws, { type: "welcome", id });
 
   ws.on("message", (msg) => {
     try {
       const data = JSON.parse(msg);
-      if (data.to && data.type) {
-        sendTo(data.to, { ...data, from: id });
+      if (data.to && clients.has(data.to)) {
+        safeSend(clients.get(data.to), { ...data, from: id });
       }
     } catch (e) {
-      console.error("❌ Invalid message:", e);
+      console.error("Invalid message:", e);
     }
   });
 
   ws.on("close", () => {
     clients.delete(id);
-    console.log(`🔴 Client disconnected: ${id} | Total: ${clients.size}`);
+    console.log(`🔴 Disconnected: ${id} | Total: ${clients.size}`);
   });
 });
 
-// 🩵 Keep server alive
+// 🔁 Keep alive
 setInterval(() => {
-  wss.clients.forEach((ws) => {
+  for (const ws of wss.clients) {
     if (ws.readyState === ws.OPEN) ws.ping();
-  });
-}, 20000);
+  }
+}, 25000);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () =>
-  console.log(`🚀 Server running on port ${PORT}`)
-);
+server.listen(PORT, () => console.log(`🚀 Server live on port ${PORT}`));
