@@ -1,16 +1,17 @@
 {
   "name": "koyebfm",
   "version": "1.0.0",
-  "description": "Fast WebSocket FM Server",
+  "description": "Ultra-fast WebSocket FM Signaling Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "ws": "^8.17.0"
+    "express": "^4.19.2",
+    "ws": "^8.17.1",
+    "cors": "^2.8.5"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "24.x"
   }
 }
