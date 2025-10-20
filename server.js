@@ -1,39 +1,45 @@
+// server.js
 import express from "express";
 import http from "http";
 import { WebSocketServer } from "ws";
 import cors from "cors";
 
 const app = express();
-app.use(cors()); // Enable CORS
+app.use(cors());
 app.use(express.json());
 
+// ✅ Root route
+app.get("/", (req, res) => {
+  res.json({ status: "✅ FM WebSocket Server Running", time: new Date().toISOString() });
+});
+
+// ✅ Create HTTP + WS server
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-let clients = new Map();
+// ✅ All connected clients
+const clients = new Set();
 
-wss.on("connection", (ws, req) => {
-  const id = Math.random().toString(36).slice(2);
-  clients.set(id, ws);
-  console.log("🟢 Client connected:", id);
+// Handle new connections
+wss.on("connection", (ws) => {
+  console.log("🔗 New client connected");
+  clients.add(ws);
 
   ws.on("message", (msg) => {
-    for (const [key, client] of clients.entries()) {
-      if (client.readyState === 1 && client !== ws) {
+    // Broadcast to all clients
+    for (const client of clients) {
+      if (client !== ws && client.readyState === 1) {
         client.send(msg);
       }
     }
   });
 
   ws.on("close", () => {
-    clients.delete(id);
-    console.log("🔴 Client disconnected:", id);
+    clients.delete(ws);
+    console.log("❌ Client disconnected");
   });
 });
 
-app.get("/", (req, res) => {
-  res.send("🎧 FM WebSocket server running OK ✅");
-});
-
+// ✅ Port from environment (Koyeb gives PORT)
 const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => console.log(`🚀 Server live on port ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
