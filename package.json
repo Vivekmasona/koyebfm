@@ -1,7 +1,7 @@
 {
   "name": "koyebfm",
   "version": "1.0.0",
-  "description": "Fast FM WebRTC signaling server for Koyeb",
+  "description": "Fast WebSocket FM Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,6 +11,6 @@
     "ws": "^8.17.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18.0.0"
   }
 }
