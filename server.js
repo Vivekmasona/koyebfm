@@ -1,77 +1,39 @@
-// Fast, crash-proof WebSocket Signaling Server
 import express from "express";
 import http from "http";
 import { WebSocketServer } from "ws";
 import cors from "cors";
-import crypto from "crypto";
 
 const app = express();
-app.use(cors());
-app.get("/", (req, res) => {
-  res.send("🎧 KoyebFM Node 24 Server Live!");
-});
+app.use(cors()); // Enable CORS
+app.use(express.json());
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-const clients = new Map(); // id → { ws, role }
+let clients = new Map();
 
-function safeSend(ws, data) {
-  if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(data));
-}
+wss.on("connection", (ws, req) => {
+  const id = Math.random().toString(36).slice(2);
+  clients.set(id, ws);
+  console.log("🟢 Client connected:", id);
 
-// keep alive
-setInterval(() => {
-  for (const [, c] of clients) {
-    if (c.ws.readyState === c.ws.OPEN) safeSend(c.ws, { type: "ping" });
-  }
-}, 25000);
-
-wss.on("connection", (ws) => {
-  const id = crypto.randomUUID();
-  clients.set(id, { ws });
-  console.log("🔗 Connected:", id);
-
-  ws.on("message", (raw) => {
-    let msg;
-    try {
-      msg = JSON.parse(raw.toString());
-    } catch {
-      return;
-    }
-
-    const { type, role, target, payload } = msg;
-
-    // Register
-    if (type === "register") {
-      clients.get(id).role = role;
-      console.log(`🧩 ${id} registered as ${role}`);
-      if (role === "listener") {
-        for (const [, c] of clients)
-          if (c.role === "broadcaster")
-            safeSend(c.ws, { type: "listener-joined", id });
+  ws.on("message", (msg) => {
+    for (const [key, client] of clients.entries()) {
+      if (client.readyState === 1 && client !== ws) {
+        client.send(msg);
       }
-    }
-
-    // Relay
-    if (["offer", "answer", "candidate"].includes(type) && target) {
-      const t = clients.get(target);
-      if (t) safeSend(t.ws, { type, from: id, payload });
     }
   });
 
   ws.on("close", () => {
     clients.delete(id);
-    console.log("❌ Disconnected:", id);
-    for (const [, c] of clients])
-      if (c.role === "broadcaster") safeSend(c.ws, { type: "peer-left", id });
+    console.log("🔴 Client disconnected:", id);
   });
-
-  ws.on("error", (err) => console.error("⚠️ WebSocket error:", err.message));
 });
 
-server.keepAliveTimeout = 70000;
-server.headersTimeout = 75000;
+app.get("/", (req, res) => {
+  res.send("🎧 FM WebSocket server running OK ✅");
+});
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`✅ KoyebFM running on ${PORT}`));
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => console.log(`🚀 Server live on port ${PORT}`));
