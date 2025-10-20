@@ -1,7 +1,7 @@
 {
   "name": "fm-signal-server",
   "version": "1.0.0",
-  "description": "Ultra-fast WebRTC signaling server with WebSocket and CORS (optimized for Koyeb)",
+  "description": "Ultra-fast WebRTC signaling server optimized for Koyeb",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
