@@ -1,15 +1,13 @@
-# 🎧 FM Signaling Server (WebRTC)
+# 🎧 Koyeb FM Signaling Server
 
-A lightning-fast WebSocket signaling server built with Express and WS.
+A simple WebSocket + Express signaling server.
 
-### 🚀 Features
-- Cross-origin (CORS) enabled
-- WebSocket relay for offer/answer
-- Auto client cleanup
-- Ping system to keep alive
-- Perfect for Koyeb, Render, Fly.io
+### Deploy on Koyeb
 
-### 🔧 Run locally
-```bash
-npm install
-npm start
+1. Push this repo to GitHub.
+2. Create new App → connect GitHub repo.
+3. **Build command:** `npm install`
+4. **Run command:** `npm start`
+5. **Port:** `3000`
+
+Then test:
