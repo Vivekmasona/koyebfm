@@ -1,7 +1,6 @@
 {
-  "name": "fm-server",
+  "name": "fm",
   "version": "1.0.0",
-  "description": "Fast, crash-proof WebSocket FM server for Koyeb",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -9,10 +8,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.21.1",
+    "express": "^4.19.2",
     "ws": "^8.18.0"
-  },
-  "engines": {
-    "node": ">=24.x"
   }
 }
